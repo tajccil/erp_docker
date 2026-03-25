@@ -862,6 +862,7 @@ Many teams use both: Frappe for back-office/admin tools, Django for customer-fac
 - [`docs/05-development/01-development.md`](05-development/01-development.md) - Detailed development setup
 - [`docs/02-setup/04-env-variables.md`](02-setup/04-env-variables.md) - Environment variable reference
 - [`docs/02-setup/07-single-server-example.md`](02-setup/07-single-server-example.md) - Production deployment guide
+- [`docs/02-setup/09-india-compliance-deployment.md`](02-setup/09-india-compliance-deployment.md) - ERPNext with India Compliance (custom image and site setup)
 - [`docs/04-operations/01-site-operations.md`](04-operations/01-site-operations.md) - Common site management tasks
 - `development/installer.py` - Automated setup script
 - [`pwd.yml`](../pwd.yml) - Quick test configuration

@@ -99,6 +99,10 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 This repository is only for container related stuff. You also might want to contribute to:
 
+## India Compliance (ERPNext India GST)
+
+To run [India Compliance](https://github.com/resilient-tech/india-compliance) with this stack, follow the **[India Compliance deployment guide](docs/02-setup/09-india-compliance-deployment.md)**. Sample `apps.json` files and a helper build script live under [`resources/`](resources/).
+
 ## Resources
 
 - [Frappe framework](https://github.com/frappe/frappe),

@@ -40,6 +40,8 @@ Alternatively, you can directly use `docker compose up` to start containers with
 
 Setup Frappe with containerized MariaDB and Redis, exposing the application directly on port `:8080` without a reverse proxy.
 
+For **ERPNext with India Compliance** (custom image build, `.env`, and `bench install-app india_compliance`), see [India Compliance deployment](09-india-compliance-deployment.md).
+
 **Requirements:**
 
 - Set `DB_PASSWORD` in `.env` (or use default `123`)
