@@ -8,6 +8,13 @@ This guide walks through a typical self-hosted deployment: build a **layered ima
 
 For background on custom images and compose overrides, see [Build Setup](02-build-setup.md), [Start Setup](03-start-setup.md), and [Setup Examples](06-setup-examples.md).
 
+## Domain and site name
+
+This guide uses the production hostname **`erp.cortexcraft.com`** as the Frappe **site name** (they should match so routing works without extra headers).
+
+- **DNS:** Create an **A** (or **AAAA**) record for `erp.cortexcraft.com` pointing to your server’s public IP before users rely on the URL.
+- **Firewall:** Allow traffic to the port you publish (default **8080** with `compose.noproxy.yaml`, or **80**/**443** if you terminate TLS on a reverse proxy).
+
 ## Prerequisites
 
 - Git, Docker, and Docker Compose v2 (see [Build Setup](02-build-setup.md#prerequisites))
@@ -62,7 +69,9 @@ PULL_POLICY=missing
 
 Use `CUSTOM_TAG=15` if you built with `./resources/build-india-compliance-image.sh 15`.
 
-Set at least **`DB_PASSWORD`** for MariaDB (the default in `example.env` is only suitable for local testing). See [Environment variables](04-env-variables.md) for all options (`HTTP_PUBLISH_PORT`, proxy settings, external DB/Redis, etc.).
+`example.env` sets **`DB_PASSWORD=123`** for MariaDB. Keep that value (or change it and use the **same** value in `bench new-site` as `--db-root-password`). **`123` is only for testing;** use a strong password in production. See [Environment variables](04-env-variables.md) for all options (`HTTP_PUBLISH_PORT`, proxy settings, external DB/Redis, etc.).
+
+Because the site will be accessed as **`https://erp.cortexcraft.com`** or **`http://erp.cortexcraft.com:8080`**, the bench site name below is **`erp.cortexcraft.com`**. If the browser hostname and site name ever differ (for example testing via `localhost`), set **`FRAPPE_SITE_NAME_HEADER=erp.cortexcraft.com`** in `.env` so the correct site is selected; when hostname and site name match, you can omit it.
 
 > **Security:** Use strong passwords and restrict network access in production. For TLS and reverse proxies, see [Production](../03-production/index.md) and [Setup Examples → HTTPS](06-setup-examples.md#example-3-production-setup-with-https).
 
@@ -91,36 +100,36 @@ Wait until the `db` service is healthy and the `configurator` service has finish
 
 ## 5. Create a site and install India Compliance
 
-Replace `<sitename>`, `<db-password>`, and `<admin-password>` with your values. `DB_PASSWORD` in `.env` should match `<db-password>` if you use the bundled MariaDB.
+Use the site name **`erp.cortexcraft.com`**. With the default **`DB_PASSWORD=123`** from `example.env`, pass **`--db-root-password 123`** (always match `DB_PASSWORD` in `.env`). For **`--admin-password`**, this guide uses **`admin`** for the Frappe user **Administrator** (change after first login in production).
 
 **Option A — install ERPNext during site creation, then India Compliance:**
 
 ```bash
 docker compose -p frappe --env-file .env -f compose.india-compliance.yaml exec backend \
-  bench new-site <sitename> \
+  bench new-site erp.cortexcraft.com \
   --mariadb-user-host-login-scope='%' \
-  --db-root-password <db-password> \
-  --admin-password <admin-password> \
+  --db-root-password 123 \
+  --admin-password admin \
   --install-app erpnext
 
 docker compose -p frappe --env-file .env -f compose.india-compliance.yaml exec backend \
-  bench --site <sitename> install-app india_compliance
+  bench --site erp.cortexcraft.com install-app india_compliance
 ```
 
 **Option B — create an empty site, then install both apps:**
 
 ```bash
 docker compose -p frappe --env-file .env -f compose.india-compliance.yaml exec backend \
-  bench new-site <sitename> \
+  bench new-site erp.cortexcraft.com \
   --mariadb-user-host-login-scope='%' \
-  --db-root-password <db-password> \
-  --admin-password <admin-password>
+  --db-root-password 123 \
+  --admin-password admin
 
 docker compose -p frappe --env-file .env -f compose.india-compliance.yaml exec backend \
-  bench --site <sitename> install-app erpnext
+  bench --site erp.cortexcraft.com install-app erpnext
 
 docker compose -p frappe --env-file .env -f compose.india-compliance.yaml exec backend \
-  bench --site <sitename> install-app india_compliance
+  bench --site erp.cortexcraft.com install-app india_compliance
 ```
 
 The app name on the bench CLI is `india_compliance` (underscore). For more site tasks, see [Site operations](../04-operations/01-site-operations.md).
@@ -129,10 +138,12 @@ The app name on the bench CLI is `india_compliance` (underscore). For more site 
 
 By default the app is exposed on port **8080** (see `overrides/compose.noproxy.yaml` and `HTTP_PUBLISH_PORT`).
 
-- Browser: `http://localhost:8080` (or your server IP/host).
-- Log in with the Administrator user and the admin password you set.
+- **Direct HTTP (no TLS on Docker):** `http://erp.cortexcraft.com:8080` (after DNS points to this host).
+- **Local testing on the server:** `http://127.0.0.1:8080` — if the Host header does not match `erp.cortexcraft.com`, set **`FRAPPE_SITE_NAME_HEADER=erp.cortexcraft.com`** in `.env`, restart the stack, then reload. See [Environment variables](04-env-variables.md).
 
-If the site name does not match the host header (e.g. you use `127.0.0.1` but the site is `mysite.local`), set `FRAPPE_SITE_NAME_HEADER` in `.env` as described in [Environment variables](04-env-variables.md).
+Log in with user **`Administrator`** and password **`admin`** (unless you used a different `--admin-password`).
+
+For **HTTPS** on standard ports (443) in production, put a reverse proxy or Traefik/nginx in front and follow [Setup Examples → HTTPS](06-setup-examples.md#example-3-production-setup-with-https) or [TLS/SSL](../03-production/01-tls-ssl-setup.md); users would then use **`https://erp.cortexcraft.com`** without `:8080`.
 
 ## Troubleshooting
 
